@@ -22,6 +22,9 @@ class TransactionController extends Controller
         $this->exchangeRateService = $exchangeRateService;
     }
 
+     /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request, $account_id = null)
     {
         $accountid = $account_id;;
@@ -29,11 +32,17 @@ class TransactionController extends Controller
     }
     
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         return view('transactions.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function transfer(TransferRequest $request)
     {
       
@@ -56,7 +65,7 @@ class TransactionController extends Controller
             return back()->with('error', 'Insufficient funds.');
         }
 
-        // Currency conversion
+        // Currency conversion service
         $exchangeRate = $this->exchangeRateService->getRate($sender->currency, $request->currency);
         if ($exchangeRate === null) {
             return back()->with('error', 'Unable to fetch exchange rate. Please try again later.');

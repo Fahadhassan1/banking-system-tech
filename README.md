@@ -35,6 +35,10 @@ node 22
     ```bash
     php artisan migrate
     ```    
+6. **Optional Seed The Database:**
+     ```bash
+    php artisan db:seed 
+    ``` 
 
 6. **Start the development server:**
     ```bash

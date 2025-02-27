@@ -9,10 +9,18 @@ use App\Http\Requests\StoreAccountRequest;
 
 
 class AccountController extends Controller {
+
+     /**
+     * Display a listing of the resource.
+     */
     public function index() {
     
         return view('accounts.index');
     }
+
+    /**
+     * Show the form for creating a new resource.
+     */
 
     public function create() {
         if(auth()->user()->is_admin) {
@@ -24,6 +32,10 @@ class AccountController extends Controller {
             return redirect()->route('accounts.index');
         }
     }
+
+    /**
+     * Store a newly created resource in storage.
+     */
 
     public function store(StoreAccountRequest $request) {
     

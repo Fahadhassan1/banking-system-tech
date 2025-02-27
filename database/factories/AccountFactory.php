@@ -23,7 +23,7 @@ class AccountFactory extends Factory
             'dob' => $this->faker->date(),
             'address' => $this->faker->address,
             'phone' => $this->faker->phoneNumber,
-            'account_number' => $this->faker->unique()->numberBetween(10000000, 99999999),
+            'account_number' => time() . rand(1000, 9999),
             'balance' => $this->faker->randomFloat(2, 0, 10000),
             'currency' => $this->faker->randomElement(['USD', 'EUR', 'GBP']),
             'user_id' => \App\Models\User::factory(), 
