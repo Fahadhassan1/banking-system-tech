@@ -8,34 +8,43 @@ use App\Models\Account;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use App\Http\Requests\TransferRequest;
+use App\Services\ExchangeRateService;
+
+
 
 class TransactionController extends Controller
 {
 
-    public function index()
+    protected $exchangeRateService;
+    public function __construct(ExchangeRateService $exchangeRateService)
     {
-        return view('transactions.index');
+        $this->exchangeRateService = $exchangeRateService;
     }
+
+    public function index(Request $request, $account_id = null)
+    {
+        $accountid = $account_id;;
+        return view('transactions.index', compact('account_id'));
+    }
+    
 
     public function create()
     {
         return view('transactions.create');
     }
 
-    public function transfer(Request $request)
+    public function transfer(TransferRequest $request)
     {
-        $request->validate([
-            'recipient_account_number' => 'required|exists:accounts,account_number',
-            'amount' => 'required|numeric|min:1',
-            'currency' => 'required|in:USD,GBP,EUR',
-            'description' => 'nullable|string',
-        ]);
-
-        $sender = Auth::user()->getAccounts()->first();  
+      
+        $sender = Auth::user()->accounts()->first();
 
         $recipient = Account::where('account_number', $request->recipient_account_number)->first();
 
-        if ($sender->account_number === $request->recipient_account_number) {
+        if (!$sender) {
+            return back()->with('error', 'You dont have Saving Account Yet! Sender account not found.');
+        }
+        if ($sender->account_number == $request->recipient_account_number) {
             return  back()->with('error', 'You cannot transfer funds to the same account.');
         }
         
@@ -48,7 +57,10 @@ class TransactionController extends Controller
         }
 
         // Currency conversion
-        $exchangeRate = $this->getExchangeRate($sender->currency, $request->currency);
+        $exchangeRate = $this->exchangeRateService->getRate($sender->currency, $request->currency);
+        if ($exchangeRate === null) {
+            return back()->with('error', 'Unable to fetch exchange rate. Please try again later.');
+        }
         $convertedAmount = $request->amount * ($exchangeRate ?? 1);
 
         DB::transaction(function () use ($sender, $recipient, $request, $convertedAmount, $exchangeRate) {
@@ -60,7 +72,7 @@ class TransactionController extends Controller
             $recipient->balance += $convertedAmount;
             $recipient->save();
 
-            // Record transaction
+            // Store transaction
             Transaction::create([
                 'sender_account_id' => $sender->id,
                 'receiver_account_id' => $recipient->id,
@@ -76,20 +88,5 @@ class TransactionController extends Controller
         return back()->with('success', 'Transfer successful.');
     }
 
-    private function getExchangeRate($from, $to)
-    {
 
-        if ($from === $to) return 1;
-
-        $apiKey = config('services.exchangeratesapi.key');
-        
-        $response = Http::get("https://api.exchangeratesapi.io/latest", [
-            'access_key' => $apiKey,
-            'symbols' => "$from,$to"
-        ]);
-
-        $rate = $response->json()['rates'][$to] ?? null;
-
-        return $rate ? $rate * 1.01 : null; // Apply 0.01 spread
-    }
 }

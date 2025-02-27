@@ -109,9 +109,6 @@
              $('#custom-search').on('keyup', function() {
                 datatable.search(this.value).draw(); 
             });
-            $('#dateRange').on('change', function() {
-                datatable.ajax.reload();
-            });
      });
        
     </script>   

@@ -18,7 +18,7 @@ class DataTableController extends Controller
 
         if ($request->ajax()) {
 
-            $accounts = Auth::user()->getAccounts();  
+            $accounts = $accounts = Auth::user()->is_admin ? Account::all() : Auth::user()->accounts;
     
             return Datatables::of($accounts)
                 ->editColumn('account_number', function($account) {
@@ -36,7 +36,7 @@ class DataTableController extends Controller
             
         
                 ->editColumn('balance', function($account) {
-                    return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">' . number_format($account->balance,'0') .'</p>');
+                    return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">' . number_format($account->balance,'2') ." ". $account->currency .'</p>');
                 })
                 ->editColumn('created_at', function($account) {
                     return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">' .date('d M Y H:m:i', strtotime($account->created_at)).'</p>');
@@ -49,8 +49,8 @@ class DataTableController extends Controller
                     return new HtmlString( $statusHtml);
                 })
 
-                ->editColumn('action', function($user) {
-                    $html = '<a href="' . route('transactions.index') . '" class="btn btn-primary btn-sm">View Transaction</a>';
+                ->editColumn('action', function($accounts) {
+                    $html = '<a href="' . route('transactions.index', ['account_id' => $accounts->id]) . '" class="btn btn-primary btn-sm">View Transaction</a>';
                     return new HtmlString($html);
                 })->make(true);
 
@@ -65,20 +65,33 @@ class DataTableController extends Controller
 
         if ($request->ajax()) {
 
-
-            $accounts = Auth::user()->getAccounts()->first();  
-            
-
-            $transactions = Transaction::where('sender_account_id', $accounts->id)
-            ->orWhere('receiver_account_id', $accounts->id)
+            $account = Account::findOrFail($request->account_id);
+            $transactions = Transaction::where(function ($query) use ($account) {
+                $query->where('sender_account_id', $account->id)
+                      ->orWhere('receiver_account_id', $account->id);
+            })
+            ->with(['senderAccount.user', 'receiverAccount.user'])
             ->orderBy('created_at', 'desc')
             ->get();
 
             return Datatables::of($transactions)
                 
-                ->editColumn('transaction_type', function($transaction) {
-                    return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">' .ucwords($transaction->transaction_type).'</p>');
+                
+                ->editColumn('sender', function($transaction) {
+                    return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">' . $transaction->senderAccount->first_name .' '. $transaction->senderAccount->last_name .'</p>');
                 })
+                ->editColumn('receiver', function($transaction) {
+                    return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">' . $transaction->receiverAccount->first_name .' '. $transaction->receiverAccount->last_name .'</p>');
+                })
+                ->editColumn('transaction_type', function($transaction) use ($account) {
+                    
+                        if($transaction->sender_account_id == $account->id){
+                            return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">Debit </p>');
+                        }else{
+                            return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">Credit</p>');
+                        }
+                })
+             
                 ->editColumn('amount', function($transaction) {
                     return new HtmlString('<p class="datatable-user-data w-400 f-size-14 color-1 proxima">' . number_format($transaction->amount,'0') .'</p>');
                 })

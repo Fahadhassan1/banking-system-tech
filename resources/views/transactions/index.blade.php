@@ -54,6 +54,8 @@
                                 <table class="table-responsive table mb-0 table-borderless nowrap" id="datatable_t">
                                     <thead class="datatable-header">
                                     <tr>
+                                        <th class="w-600">Sender</th>
+                                        <th class="w-600">Receiver</th>
                                         <th class="w-600">Type</th>
                                         <th class="w-600">Amount</th>
                                         <th class="w-600">Currency</th>
@@ -79,6 +81,13 @@
  <script>
         document.addEventListener("DOMContentLoaded", function () {
         
+            let account_id = {!! json_encode($account_id) !!};
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
             let datatable =$('#datatable_t').DataTable({
                 processing: true,
                 serverSide: true,
@@ -88,11 +97,15 @@
                 order: [[0, 'desc']],
                 // scrollX: true,
                 ajax: {
-                    url: "{!! route('transactions.get.data') !!}",
-                    type: 'GET',
-
+                    url: "{{ route('transactions.get.data') }}",
+                    type: 'POST',
+                    data: function(d) {
+                        d.account_id = account_id;
+                    }
                 },
                 columns: [
+                    { data: 'sender', name: 'sender'},
+                    { data: 'receiver', name: 'receiver'},
                     { data: 'transaction_type', name: 'transaction_type'},
                     { data: 'amount', name: 'amount'},
                     { data: 'currency', name: 'currency' },
@@ -106,9 +119,6 @@
              // Custom search functionality
              $('#custom-search').on('keyup', function() {
                 datatable.search(this.value).draw(); 
-            });
-            $('#dateRange').on('change', function() {
-                datatable.ajax.reload();
             });
      });
        

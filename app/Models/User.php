@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class User extends Authenticatable
 {
@@ -66,13 +68,11 @@ class User extends Authenticatable
         $this->save();
     }
 
-    /**
-     * get user accounts
+     /**
+     * A user can have multiple accounts.
      */
-    public function getAccounts()
+    public function accounts(): HasMany
     {
-        return $this->is_admin == 1 
-            ? Account::all() 
-            : Account::where('user_id', $this->id)->get();
+        return $this->hasMany(Account::class);
     }
 }

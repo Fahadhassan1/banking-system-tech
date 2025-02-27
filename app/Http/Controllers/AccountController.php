@@ -5,33 +5,27 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Account;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreAccountRequest;
 
 
 class AccountController extends Controller {
     public function index() {
+    
         return view('accounts.index');
     }
 
     public function create() {
-        $users=User::where('is_admin',0)->get();
-        return view('accounts.create',compact('users'));
+        if(auth()->user()->is_admin) {
+            $users = User::where('is_admin', 0)
+            ->doesntHave('accounts') 
+            ->get();
+            return view('accounts.create',data: compact('users'));
+        }else{
+            return redirect()->route('accounts.index');
+        }
     }
 
-    public function store(Request $request) {
-        // Validate each account entry
-        $request->validate([
-            'accounts' => 'required|array|min:1', 
-            'accounts.*.fname' => 'required|string|max:255',
-            'accounts.*.lname' => 'required|string|max:255',
-            'accounts.*.dob' => 'required|date',
-            'accounts.*.address' => 'required|string',
-            'accounts.*.phone' => 'required|string',
-            'accounts.*.currency' => 'required|in:USD,GBP,EUR',
-            'accounts.*.user_id' => 'required|exists:users,id|distinct',
-            'accounts.*.balance' => 'required|numeric',
-
-        ]);
+    public function store(StoreAccountRequest $request) {
     
         // Prepare the data for bulk insert
         $accountsData = [];

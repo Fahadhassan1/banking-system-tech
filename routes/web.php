@@ -43,8 +43,8 @@ Route::middleware(['auth', 'twofactor'])->group(function () {
     // Transactions Routes
     Route::get('/transfer', [TransactionController::class, 'create'])->name('transfer.create');
     Route::post('/transfer', [TransactionController::class, 'transfer'])->name('transfer.store');
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions/fetch', [DataTableController::class, 'get_transactions'])->name('transactions.get.data');
+    Route::get('/transactions/{account_id}', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::post('/transactions/fetch', [DataTableController::class, 'get_transactions'])->name('transactions.get.data');
 
 
 });
