@@ -102,13 +102,5 @@
             </div>
         </div>
     </div>
-
-
- <script>
-        document.addEventListener("DOMContentLoaded", function () {
-        
-            
-     });
-       
-    </script>   
+  
 </x-guest-layout>
