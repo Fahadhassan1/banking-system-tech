@@ -7,7 +7,6 @@ use App\Models\Transaction;
 use App\Models\Account;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use App\Http\Requests\TransferRequest;
 use App\Services\ExchangeRateService;
 
@@ -25,9 +24,9 @@ class TransactionController extends Controller
      /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, $account_id = null)
+    public function index(Request $request, $accountId = null)
     {
-        $accountid = $account_id;;
+        $account_id = $accountId;
         return view('transactions.index', compact('account_id'));
     }
     
