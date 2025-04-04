@@ -1,5 +1,10 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
+## Demo for banking System Credit-Debit-Tranfer
+watch the video for full demo
+
+https://www.loom.com/share/c1562721546347ab86d93f1cc98e7b30
+
 ## Running This Project
 
 To get started with this project, follow these steps:
